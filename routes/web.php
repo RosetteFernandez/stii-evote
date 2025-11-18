@@ -186,6 +186,17 @@ Route::get('/stsg-admin-notifications', function() {
     return view('livewire.stsg-admin-notification.stsg-admin-notification');
 })->name('stsg-admin-notifications');
 
+// Directly serve system_settings assets from public for reliability on Railway
+Route::get('storage/system_settings/{path}', function ($path) {
+    $file = public_path('system_settings/' . $path);
+    if (!file_exists($file)) {
+        abort(404);
+    }
+    return response()->file($file, [
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*')->name('storage.system_settings');
+
 // Storage file serving route (for Railway - must come before catch-all route)
 Route::get('storage/{path}', [PublicFileController::class, 'show'])
     ->where('path', '.*')
