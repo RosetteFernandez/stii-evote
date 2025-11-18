@@ -357,20 +357,13 @@ class SystemSettings extends Component
 
     private function handleFileUpload($file)
     {
-        // Create system_settings directory if it doesn't exist
-        $directory = 'system_settings';
-        if (!\Storage::disk('public')->exists($directory)) {
-            \Storage::disk('public')->makeDirectory($directory);
-        }
-
-        // Generate unique filename
-        $filename = time() . '_' . $file->getClientOriginalName();
+        // Read file content and convert to base64
+        $fileContent = file_get_contents($file->getRealPath());
+        $mimeType = $file->getMimeType();
+        $base64 = base64_encode($fileContent);
         
-        // Store the file
-        $path = $file->storeAs($directory, $filename, 'public');
-        
-        // Return the path for database storage
-        return $path;
+        // Return data URI format for embedding in HTML
+        return "data:{$mimeType};base64,{$base64}";
     }
 
     public function render()
