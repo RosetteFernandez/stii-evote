@@ -25,7 +25,6 @@ License: You must have a valid license purchased only from themeforest(the above
     <!-- BEGIN: CSS Assets-->
     <!-- END: CSS Assets-->
     @vite('resources/css/app.css')
-    <script src="/js/login.js" defer></script>
     
     <!-- Include notification toast component -->
     <x-menu.notification-toast />
@@ -49,14 +48,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                     ->where('module_id', 6)
                                     ->where('status', 'active')
                                     ->first();
-                                // Support both base64 data URIs and file paths
-                                if ($loginTopLogo && str_starts_with($loginTopLogo->value, 'data:')) {
-                                    $topLogoPath = $loginTopLogo->value; // Base64 data URI
-                                } elseif ($loginTopLogo) {
-                                    $topLogoPath = asset('storage/' . $loginTopLogo->value); // File path
-                                } else {
-                                    $topLogoPath = asset('assets/dist/images/logo.svg'); // Default
-                                }
+                                $topLogoPath = $loginTopLogo ? asset('storage/' . $loginTopLogo->value) : asset('assets/dist/images/logo.svg');
                             @endphp
                             <img class="w-6" src="{{ $topLogoPath }}" alt="Login Logo">
                             @php
@@ -78,14 +70,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                     ->where('module_id', 3)
                                     ->where('status', 'active')
                                     ->first();
-                                // Support both base64 data URIs and file paths
-                                if ($loginCenterLogo && str_starts_with($loginCenterLogo->value, 'data:')) {
-                                    $centerLogoPath = $loginCenterLogo->value; // Base64 data URI
-                                } elseif ($loginCenterLogo) {
-                                    $centerLogoPath = asset('storage/' . $loginCenterLogo->value); // File path
-                                } else {
-                                    $centerLogoPath = asset('assets/dist/images/illustration.svg'); // Default
-                                }
+                                $centerLogoPath = $loginCenterLogo ? asset('storage/' . $loginCenterLogo->value) : asset('assets/dist/images/illustration.svg');
                             @endphp
                             <img class="-mt-16 w-1/2" src="{{ $centerLogoPath }}" alt="Login Illustration">
                             @php
