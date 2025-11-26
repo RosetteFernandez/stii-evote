@@ -118,10 +118,10 @@ class RegisterController extends Controller
             'student_id' => 'required|string|max:255|unique:students,student_id',
             'course_id' => 'required|exists:course,id',
             'department_id' => 'required|exists:department,id',
-            'first_name' => 'required|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'suffix' => 'nullable|string|max:10',
+            'first_name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            'middle_name' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            'last_name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            'suffix' => ['nullable', 'string', 'max:10', 'regex:/^[a-zA-Z.\s]+$/'],
             'gender' => 'required|in:Male,Female,Other',
             'marital_status' => 'required|in:Single,Married,Widowed,Divorced',
             'date_of_birth' => 'required|date|before:today',
@@ -147,6 +147,10 @@ class RegisterController extends Controller
             'age.max' => 'Age cannot exceed 150 years.',
             'password.confirmed' => 'Password confirmation does not match.',
             'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+            'first_name.regex' => 'First name must contain only letters and spaces.',
+            'middle_name.regex' => 'Middle name must contain only letters and spaces.',
+            'last_name.regex' => 'Last name must contain only letters and spaces.',
+            'suffix.regex' => 'Suffix must contain only letters, periods, and spaces.',
         ]);
 
         if ($validator->fails()) {
