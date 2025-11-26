@@ -12,6 +12,66 @@ use App\Http\Controllers\register\RegisterController;
 use App\Http\Controllers\pdf\PdfController;
 use App\Http\Controllers\PublicFileController;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+// Debug route to check database tables
+Route::get('/debug/check-tables', function() {
+    try {
+        $tables = [
+            'system_settings',
+            'course',
+            'department',
+            'school_year_and_semester',
+            'students'
+        ];
+        
+        $results = [];
+        
+        foreach ($tables as $table) {
+            $results[$table] = [
+                'exists' => Schema::hasTable($table),
+                'count' => Schema::hasTable($table) ? DB::table($table)->count() : 'N/A'
+            ];
+        }
+        
+        return response()->json([
+            'database' => config('database.default'),
+            'connection' => config('database.connections.mysql'),
+            'tables' => $results,
+            'env_check' => [
+                'DB_HOST' => env('DB_HOST'),
+                'DB_DATABASE' => env('DB_DATABASE'),
+                'DB_USERNAME' => env('DB_USERNAME') ? 'SET' : 'NOT SET',
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
+// Debug register error route
+Route::get('/debug/register-error', function() {
+    try {
+        $controller = new \App\Http\Controllers\register\RegisterController();
+        $response = $controller->index();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Register page loaded successfully'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => array_slice($e->getTrace(), 0, 5)
+        ], 500);
+    }
+});
 
 Route::get('/', [LoginController::class, 'login'])->name('login');
 Route::post('/authenticate', [LoginController::class, 'authenticate'])->name('authenticate');
