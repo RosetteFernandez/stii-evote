@@ -216,7 +216,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                             <input type="text" name="first_name"
                                                 class="h-10 w-full rounded-md border bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-foreground placeholder:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/5 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="Enter First Name" value="{{ old('first_name') }}"
-                                                oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                                                onkeypress="return /[a-zA-Z\s]/.test(event.key)" required>
                                             @error('first_name')
                                                 <div class="error-message">{{ $message }}</div>
                                             @enderror
@@ -228,7 +228,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                             <input type="text" name="middle_name"
                                                 class="h-10 w-full rounded-md border bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-foreground placeholder:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/5 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="Enter Middle Name" value="{{ old('middle_name') }}"
-                                                oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                                                onkeypress="return /[a-zA-Z\s]/.test(event.key)">
                                             @error('middle_name')
                                                 <div class="error-message">{{ $message }}</div>
                                             @enderror
@@ -239,7 +239,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                             <input type="text" name="last_name"
                                                 class="h-10 w-full rounded-md border bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-foreground placeholder:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/5 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="Enter Last Name" value="{{ old('last_name') }}"
-                                                oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                                                onkeypress="return /[a-zA-Z\s]/.test(event.key)" required>
                                             @error('last_name')
                                                 <div class="error-message">{{ $message }}</div>
                                             @enderror
@@ -251,7 +251,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                             <input type="text" name="suffix"
                                                 class="h-10 w-full rounded-md border bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-foreground placeholder:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/5 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="Enter Suffix (if any)" value="{{ old('suffix') }}"
-                                                oninput="this.value = this.value.replace(/[^a-zA-Z.\s]/g, '')">
+                                                onkeypress="return /[a-zA-Z.\s]/.test(event.key)">
                                             @error('suffix')
                                                 <div class="error-message">{{ $message }}</div>
                                             @enderror
