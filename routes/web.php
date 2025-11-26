@@ -46,8 +46,8 @@ Route::get('/debug/db-test', function() {
 // Test model loading
 Route::get('/debug/model-test', function() {
     try {
-        $courses = \App\Models\Course::count();
-        $departments = \App\Models\Department::count();
+        $courses = \App\Models\course::count();
+        $departments = \App\Models\department::count();
         return response()->json([
             'status' => 'ok',
             'courses' => $courses,

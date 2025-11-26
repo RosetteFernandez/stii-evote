@@ -4,8 +4,8 @@ namespace App\Http\Controllers\register;
 
 use App\Http\Controllers\Controller;
 use App\Models\Students;
-use App\Models\Course;
-use App\Models\Department;
+use App\Models\course;
+use App\Models\department;
 use App\Models\School_Year_And_Semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,8 +22,8 @@ class RegisterController extends Controller
             $activeSchoolYear = School_Year_And_Semester::where('status', 'active')->first();
 
             // Get all courses and departments for dropdowns
-            $courses = Course::where('status', 'active')->orderBy('course_name')->get();
-            $departments = Department::where('status', 'active')->orderBy('department_name')->get();
+            $courses = course::where('status', 'active')->orderBy('course_name')->get();
+            $departments = department::where('status', 'active')->orderBy('department_name')->get();
 
             // Default values for branding
             $topLogoPath = asset('assets/dist/images/logo.svg');
