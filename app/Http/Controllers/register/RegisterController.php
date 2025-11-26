@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\register;
 
 use App\Http\Controllers\Controller;
-use App\Models\Students;
+use App\Models\students;
 use App\Models\course;
 use App\Models\department;
-use App\Models\School_Year_And_Semester;
+use App\Models\school_year_and_semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -19,7 +19,7 @@ class RegisterController extends Controller
     {
         try {
             // Get active school year and semester
-            $activeSchoolYear = School_Year_And_Semester::where('status', 'active')->first();
+            $activeSchoolYear = school_year_and_semester::where('status', 'active')->first();
 
             // Get all courses and departments for dropdowns
             $courses = course::where('status', 'active')->orderBy('course_name')->get();
@@ -157,7 +157,7 @@ class RegisterController extends Controller
 
         try {
             // Get current active school year
-            $activeSchoolYear = School_Year_And_Semester::where('status', 'active')->first();
+            $activeSchoolYear = school_year_and_semester::where('status', 'active')->first();
 
             if (!$activeSchoolYear) {
                 return back()->withErrors(['error' => 'No active school year found. Please contact the administrator.'])->withInput();
@@ -193,7 +193,7 @@ class RegisterController extends Controller
             }
 
             // ✅ Create student record
-            Students::create($data);
+            students::create($data);
 
             return redirect()->route('register')
                 ->with('success', 'Registration successful! Your account is pending approval. You will be notified once approved.');

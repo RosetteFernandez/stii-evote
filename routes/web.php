@@ -69,7 +69,7 @@ Route::get('/debug/register-data', function() {
     });
     
     try {
-        $activeSchoolYear = \App\Models\School_Year_And_Semester::where('status', 'active')->first();
+        $activeSchoolYear = \App\Models\school_year_and_semester::where('status', 'active')->first();
         $courses = \App\Models\course::where('status', 'active')->orderBy('course_name')->get();
         $departments = \App\Models\department::where('status', 'active')->orderBy('department_name')->get();
         
