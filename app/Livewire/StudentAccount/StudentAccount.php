@@ -52,8 +52,6 @@ class StudentAccount extends Component
     public $deleteStudentId;
     public $temp_profile_image;
     public $temp_student_id_image;
-    public $temp_profile_image_base64;
-    public $temp_student_id_image_base64;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -106,10 +104,6 @@ class StudentAccount extends Component
 
         $this->temp_profile_image = $student->profile_image;
         $this->temp_student_id_image = $student->student_id_image;
-        
-        // Convert to base64 for display
-        $this->temp_profile_image_base64 = $this->getImageBase64($student->profile_image);
-        $this->temp_student_id_image_base64 = $this->getImageBase64($student->student_id_image);
 
         $this->showEditModal = true;
     }
@@ -350,59 +344,6 @@ class StudentAccount extends Component
         $this->temp_student_id_image = null;
     }
 
-    public function getImageBase64($imagePath)
-    {
-        if (!$imagePath) {
-            return null;
-        }
-
-        try {
-            // Try different possible storage locations
-            $possiblePaths = [
-                $imagePath,
-                'public/' . $imagePath,
-                'private/public/' . $imagePath,
-            ];
-
-            // Try public disk first
-            foreach ($possiblePaths as $path) {
-                if (Storage::disk('public')->exists($path)) {
-                    $imageData = Storage::disk('public')->get($path);
-                    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-                    $mimeType = match(strtolower($extension)) {
-                        'jpg', 'jpeg' => 'image/jpeg',
-                        'png' => 'image/png',
-                        'gif' => 'image/gif',
-                        'webp' => 'image/webp',
-                        default => 'image/jpeg'
-                    };
-                    return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
-                }
-            }
-
-            // Try local disk
-            foreach ($possiblePaths as $path) {
-                if (Storage::disk('local')->exists($path)) {
-                    $imageData = Storage::disk('local')->get($path);
-                    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-                    $mimeType = match(strtolower($extension)) {
-                        'jpg', 'jpeg' => 'image/jpeg',
-                        'png' => 'image/png',
-                        'gif' => 'image/gif',
-                        'webp' => 'image/webp',
-                        default => 'image/jpeg'
-                    };
-                    return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
-                }
-            }
-
-            return null;
-        } catch (\Exception $e) {
-            \Log::error('Error getting image: ' . $e->getMessage());
-            return null;
-        }
-    }
-
     public function render()
     {
         $query = students::with(['course', 'department', 'school_year_and_semester']);
@@ -416,20 +357,14 @@ class StudentAccount extends Component
             });
         }
 
-        $studentsData = $query->orderBy('created_at', 'desc')->paginate($this->perPage);
-        
-        // Convert images to base64 for all students
-        foreach ($studentsData as $student) {
-            $student->profile_image_base64 = $this->getImageBase64($student->profile_image);
-            $student->student_id_image_base64 = $this->getImageBase64($student->student_id_image);
-        }
+        $students = $query->orderBy('created_at', 'desc')->paginate($this->perPage);
         
                $courses = course::active()->get();
                $departments = department::active()->get();
                $schoolYearSemesters = school_year_and_semester::active()->get();
 
         return view('livewire.student-account.student-account', [
-            'students' => $studentsData,
+            'students' => $students,
             'courses' => $courses,
             'departments' => $departments,
             'schoolYearSemesters' => $schoolYearSemesters,
