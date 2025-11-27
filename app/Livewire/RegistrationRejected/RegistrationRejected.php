@@ -90,18 +90,28 @@ class RegistrationRejected extends Component
     private function getImageBase64($imagePath)
     {
         if (!$imagePath) {
+            \Log::info('No image path provided');
             return null;
         }
 
         try {
+            // The imagePath already includes 'student_images/' prefix
+            // Try different possible storage locations
             $possiblePaths = [
-                $imagePath,
-                'public/' . $imagePath,
+                $imagePath, // Direct path as stored in database
+                'public/' . $imagePath, // With public prefix
+                'private/public/' . $imagePath, // Private storage path
             ];
+
+            \Log::info('Trying paths for: ' . $imagePath);
+            foreach ($possiblePaths as $path) {
+                \Log::info('Checking path: ' . $path);
+            }
 
             // Try public disk first
             foreach ($possiblePaths as $path) {
                 if (Storage::disk('public')->exists($path)) {
+                    \Log::info('Found on public disk: ' . $path);
                     $imageData = Storage::disk('public')->get($path);
                     $mimeType = Storage::disk('public')->mimeType($path);
                     return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
@@ -111,14 +121,17 @@ class RegistrationRejected extends Component
             // Try local disk (private storage)
             foreach ($possiblePaths as $path) {
                 if (Storage::disk('local')->exists($path)) {
+                    \Log::info('Found on local disk: ' . $path);
                     $imageData = Storage::disk('local')->get($path);
                     $mimeType = Storage::disk('local')->mimeType($path);
                     return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
                 }
             }
 
+            \Log::info('Image not found in any location: ' . $imagePath);
             return null;
         } catch (\Exception $e) {
+            \Log::error('Error getting image: ' . $e->getMessage());
             return null;
         }
     }
