@@ -115,73 +115,30 @@
                                             @php
                                         $imageSrc = asset('images/placeholders/placeholder.jpg'); // Default placeholder
 
-                                        // Try to find the image using multiple path combinations
-                                        $imageFound = false;
-                                        
-                                        // Check for profile image first
-                                        if (!empty($student->profile_image)) {
-                                            $possiblePaths = [
-                                                $student->profile_image,
-                                                'public/' . $student->profile_image,
-                                                'private/public/' . $student->profile_image,
-                                            ];
-                                            
-                                            foreach ($possiblePaths as $path) {
-                                                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-                                                    $imageSrc = route('public.file', ['path' => $path]);
-                                                    $imageFound = true;
-                                                    break;
-                                                }
-                                            }
-                                            
-                                            if (!$imageFound) {
-                                                foreach ($possiblePaths as $path) {
-                                                    if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
-                                                        // Convert to base64 for local disk
-                                                        try {
-                                                            $imageData = \Illuminate\Support\Facades\Storage::disk('local')->get($path);
-                                                            $mimeType = \Illuminate\Support\Facades\Storage::disk('local')->mimeType($path);
-                                                            $imageSrc = 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
-                                                            $imageFound = true;
-                                                            break;
-                                                        } catch (\Exception $e) {
-                                                            // Continue to next path
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        
-                                        // If no profile image, try student ID image
-                                        if (!$imageFound && !empty($student->student_id_image)) {
-                                            $possiblePaths = [
-                                                $student->student_id_image,
-                                                'public/' . $student->student_id_image,
-                                                'private/public/' . $student->student_id_image,
-                                            ];
-                                            
-                                            foreach ($possiblePaths as $path) {
-                                                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-                                                    $imageSrc = route('public.file', ['path' => $path]);
-                                                    $imageFound = true;
-                                                    break;
-                                                }
-                                            }
-                                            
-                                            if (!$imageFound) {
-                                                foreach ($possiblePaths as $path) {
-                                                    if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
-                                                        // Convert to base64 for local disk
-                                                        try {
-                                                            $imageData = \Illuminate\Support\Facades\Storage::disk('local')->get($path);
-                                                            $mimeType = \Illuminate\Support\Facades\Storage::disk('local')->mimeType($path);
-                                                            $imageSrc = 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
-                                                            $imageFound = true;
-                                                            break;
-                                                        } catch (\Exception $e) {
-                                                            // Continue to next path
-                                                        }
-                                                    }
+                                        // Prefer explicit DB paths using route-based serving
+                                        if (!empty($student->profile_image) && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->profile_image)) {
+                                            $imageSrc = route('public.file', ['path' => $student->profile_image]);
+                                        } elseif (!empty($student->student_id_image) && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->student_id_image)) {
+                                            $imageSrc = route('public.file', ['path' => $student->student_id_image]);
+                                        } else {
+                                            // Fallback: try to discover by pattern in student_images directory
+                                            $studentImagesPath = storage_path('app/public/student_images/');
+
+                                            // Look for profile images with the student's numeric PK or identifier in filename
+                                            $profilePattern = $studentImagesPath . '*_profile_*' . $student->id . '*';
+                                            $profileFiles = glob($profilePattern);
+
+                                            if (!empty($profileFiles)) {
+                                                $profileFile = basename($profileFiles[0]);
+                                                $imageSrc = route('public.file', ['path' => 'student_images/' . $profileFile]);
+                                            } else {
+                                                // Look for ID images as fallback
+                                                $idPattern = $studentImagesPath . '*_id_*' . $student->id . '*';
+                                                $idFiles = glob($idPattern);
+
+                                                if (!empty($idFiles)) {
+                                                    $idFile = basename($idFiles[0]);
+                                                    $imageSrc = route('public.file', ['path' => 'student_images/' . $idFile]);
                                                 }
                                             }
                                         }
