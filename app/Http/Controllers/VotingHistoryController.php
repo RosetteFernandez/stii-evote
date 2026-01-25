@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\VotingHistory;
 use App\Models\voting_exclusive;
 use App\Models\voting_vote_count;
@@ -41,32 +42,36 @@ class VotingHistoryController extends Controller
     $existing = VotingHistory::where('voting_exclusive_id', $voting->id)->first();
     if ($existing) return $existing;
 
-    // Compute totals
-    $totalVoters = voting_voted_by::whereHas('voting_vote_count', function($q) use ($voting) {
-        $q->where('voting_exclusive_id', $voting->id);
-    })->count();
+    // Total voters = distinct students who voted in this exclusive (one ballot per student)
+    $totalVoters = (int) DB::table('voting_voted_by')
+        ->join('voting_vote_count', 'voting_voted_by.voting_vote_count_id', '=', 'voting_vote_count.id')
+        ->where('voting_vote_count.voting_exclusive_id', $voting->id)
+        ->selectRaw('COUNT(DISTINCT voting_voted_by.students_id) as c')
+        ->value('c');
 
-    $totalVotes = voting_vote_count::where('voting_exclusive_id', $voting->id)
-        ->where('status', 'official')
+    // Total votes = sum of candidate votes; include win/loss (after finalization status changes from official)
+    $totalVotes = (int) voting_vote_count::where('voting_exclusive_id', $voting->id)
+        ->whereIn('status', ['official', 'win', 'loss'])
         ->sum('number_of_vote');
 
-    // Get all official candidates with relationships
-    $candidates = voting_vote_count::with(['student', 'position'])
+    // Get all candidates with relationships (official, win, loss)
+    $candidates = voting_vote_count::with(['student', 'appliedCandidacy.position'])
         ->where('voting_exclusive_id', $voting->id)
-        ->where('status', 'official')
+        ->whereIn('status', ['official', 'win', 'loss'])
         ->get();
 
-    // Group by position (use 'unknown' if position missing)
-    $byPosition = $candidates->groupBy(function($c) { 
-        return $c->position?->id ?? 'unknown'; 
+    // Group by position (use appliedCandidacy->position)
+    $byPosition = $candidates->groupBy(function($c) {
+        $pos = $c->appliedCandidacy?->position;
+        return $pos?->id ?? 'unknown';
     });
 
     $winners = [];
     $winnerSentences = [];
 
     foreach ($byPosition as $posId => $group) {
-        $position = $group->first()->position;
-        $positionName = $position?->name ?? 'Unknown Position';
+        $position = $group->first()->appliedCandidacy?->position;
+        $positionName = $position?->position_name ?? 'Unknown Position';
         $allowed = $position?->allowed_number_to_vote ?? 1;
 
         // Sort by votes descending
@@ -113,8 +118,8 @@ class VotingHistoryController extends Controller
     ];
 
     // Safely build title
-    $departmentName = $voting->department?->name ?? '';
-    $courseName = $voting->course?->name ?? '';
+    $departmentName = $voting->department?->department_name ?? '';
+    $courseName = $voting->course?->course_name ?? '';
 
     // Create the history record
     $record = VotingHistory::create([

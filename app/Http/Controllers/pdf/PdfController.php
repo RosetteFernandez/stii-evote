@@ -207,11 +207,10 @@ class PdfController extends Controller
         return $pdf->stream('admin-account-' . date('Y-m-d') . '.pdf');
     }
 
-    // Show a simple index page for selecting a voting exclusive to generate student voters report
+    // Show Student Voters page (Livewire: one row per student per election)
     public function studentVotersIndex()
     {
-        $votings = voting_exclusive::orderBy('start_datetime', 'desc')->get();
-        return view('student-voter.index', ['votings' => $votings]);
+        return view('student-voter.index');
     }
 
     // Generate PDF listing students who voted in a specific voting exclusive
@@ -222,14 +221,17 @@ class PdfController extends Controller
             abort(404, 'Voting exclusive not found');
         }
 
-        // Get voters for this exclusive (distinct student votes)
-        $voters = \App\Models\voting_voted_by::whereHas('voting_vote_count', function ($q) use ($id) {
+        // One row per student who voted in this exclusive (all students vote at the same election)
+        $rows = \App\Models\voting_voted_by::whereHas('voting_vote_count', function ($q) use ($id) {
             $q->where('voting_exclusive_id', $id);
-        })->with(['student.course', 'student.department'])->get();
+        })->with(['student.course', 'student.department'])->orderBy('created_at')->get()
+            ->groupBy('students_id')
+            ->map(fn ($g) => $g->first())
+            ->values();
 
         $pdf = Pdf::loadView('pdf.print-student-voters', [
             'votingExclusive' => $voting,
-            'voters' => $voters
+            'voters' => $rows
         ]);
 
         return $pdf->stream('student-voters-' . $id . '-' . date('Y-m-d') . '.pdf');
@@ -261,7 +263,11 @@ class PdfController extends Controller
             });
         }
 
-        $voters = $votersQuery->get();
+        // One row per student who voted in this exclusive (all students vote at the same time)
+        $voters = $votersQuery->orderBy('created_at')->get()
+            ->groupBy('students_id')
+            ->map(fn ($g) => $g->first())
+            ->values();
 
         // Map to the requested structure
         $data = $voters->map(function ($v) {

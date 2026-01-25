@@ -42,7 +42,7 @@ class CandidatesElection extends Component
     public function loadElectionData()
     {
         // Get both winning and losing candidates so results show full ranking
-        $query = voting_vote_count::with(['student', 'appliedCandidacy.position', 'voting_exclusive.schoolYear'])
+        $query = voting_vote_count::with(['student.course', 'appliedCandidacy.position', 'voting_exclusive.schoolYear'])
                 ->whereIn('status', ['win', 'loss']);
 
         // Apply voting exclusive filter if provided
