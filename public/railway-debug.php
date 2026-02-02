@@ -4,6 +4,12 @@
  * Access via: https://your-app.up.railway.app/railway-debug.php
  */
 
+// Bootstrap Laravel
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
 header('Content-Type: text/plain');
 
 echo "=== RAILWAY DIAGNOSTIC REPORT ===\n\n";

@@ -5,27 +5,33 @@
  * This will attempt to fix common deployment issues
  */
 
+// Bootstrap Laravel
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
 header('Content-Type: text/plain');
 echo "=== RAILWAY EMERGENCY FIX ===\n\n";
 
 // Change to Laravel root
-chdir(__DIR__);
+chdir(__DIR__.'/..');
 
 // 1. Clear all caches
 echo "1. Clearing caches...\n";
 try {
     exec('php artisan config:clear 2>&1', $output1);
     echo implode("\n", $output1) . "\n";
-    
+
     exec('php artisan cache:clear 2>&1', $output2);
     echo implode("\n", $output2) . "\n";
-    
+
     exec('php artisan view:clear 2>&1', $output3);
     echo implode("\n", $output3) . "\n";
-    
+
     exec('php artisan route:clear 2>&1', $output4);
     echo implode("\n", $output4) . "\n";
-    
+
     echo "✓ Caches cleared\n\n";
 } catch (Exception $e) {
     echo "✗ Error clearing caches: " . $e->getMessage() . "\n\n";
@@ -71,12 +77,12 @@ echo "4. Setting permissions...\n";
 try {
     chmod(__DIR__ . '/storage', 0775);
     chmod(__DIR__ . '/bootstrap/cache', 0775);
-    
+
     // Recursively set permissions
     exec('chmod -R 775 storage 2>&1', $output6);
     exec('chmod -R 775 bootstrap/cache 2>&1', $output7);
     exec('chmod -R 777 storage/app/public 2>&1', $output8);
-    
+
     echo "✓ Permissions set\n\n";
 } catch (Exception $e) {
     echo "✗ Error setting permissions: " . $e->getMessage() . "\n\n";
@@ -87,13 +93,13 @@ echo "5. Rebuilding caches...\n";
 try {
     exec('php artisan config:cache 2>&1', $output9);
     echo implode("\n", $output9) . "\n";
-    
+
     exec('php artisan route:cache 2>&1', $output10);
     echo implode("\n", $output10) . "\n";
-    
+
     exec('php artisan view:cache 2>&1', $output11);
     echo implode("\n", $output11) . "\n";
-    
+
     echo "✓ Caches rebuilt\n\n";
 } catch (Exception $e) {
     echo "✗ Error rebuilding caches: " . $e->getMessage() . "\n\n";
