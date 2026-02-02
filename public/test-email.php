@@ -39,40 +39,30 @@ if ($mailer === 'resend') {
     echo "MAIL_FROM_NAME: " . env('MAIL_FROM_NAME') . "\n\n";
 }
 
-// 2. Test Connection based on mailer type
+// 2. Skip direct API test for Resend - Laravel handles it
 if ($mailer === 'resend') {
-    echo "2. Testing Resend API...\n";
-    try {
-        // Check if Resend class exists
-        if (!class_exists('\Resend\Resend')) {
-            echo "✗ Resend package not found!\n";
-            echo "Run: composer require resend/resend-php\n\n";
-            exit;
-        }
+    echo "2. Resend Configuration Check...\n";
+    $resendKey = env('RESEND_KEY');
+    
+    if (!$resendKey) {
+        echo "✗ RESEND_KEY not set!\n\n";
+    } else {
+        echo "✓ RESEND_KEY is configured\n";
+        echo "✓ Length: " . strlen($resendKey) . " chars\n";
         
-        // Test Resend API connectivity
-        $resendKey = env('RESEND_KEY');
-        
-        // Check for quotes in key
+        // Check for quotes
         if (strpos($resendKey, '"') !== false || strpos($resendKey, "'") !== false) {
-            echo "⚠️  WARNING: RESEND_KEY has quotes!\n";
-            echo "Remove quotes from Railway variable.\n";
-            echo "Should be: re_PEnX5SPj_BGnCdZtRHPqD85YyFHt77Kiv\n";
-            echo "Not: \"re_PEnX5SPj_BGnCdZtRHPqD85YyFHt77Kiv\"\n\n";
+            echo "⚠️  WARNING: RESEND_KEY has quotes - remove them!\n";
+        } else {
+            echo "✓ No quotes detected\n";
         }
         
-        $resend = new \Resend\Resend($resendKey);
-        echo "✓ Resend API initialized successfully!\n";
-        echo "✓ API Key valid: " . substr($resendKey, 0, 8) . "..." . substr($resendKey, -4) . "\n\n";
-    } catch (\Exception $e) {
-        echo "✗ Resend API initialization failed!\n";
-        echo "Error: " . $e->getMessage() . "\n";
-        echo "Error Type: " . get_class($e) . "\n\n";
-        
-        if (strpos($e->getMessage(), 'not found') !== false) {
-            echo "Fix: Ensure resend/resend-php is in composer.json\n";
+        // Check key format
+        if (strpos($resendKey, 're_') === 0) {
+            echo "✓ Key format looks correct (starts with re_)\n";
+        } else {
+            echo "⚠️  WARNING: Key doesn't start with 're_'\n";
         }
-        // Don't exit, continue to test email sending
         echo "\n";
     }
 } else {
